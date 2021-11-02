@@ -16,6 +16,8 @@ tesztinput:
 #include <iostream>
 
 #include <vector>
+#include <stack>
+#include <queue>
 using namespace std;
 
 #include <algorithm>
@@ -121,10 +123,40 @@ public:
 	int degree(int a); // pont fokszáma
 	bool loop(int a); // hurokél
 	bool isolated(int a);
+	int find(int csucs, bool (*predicate)(int))
+	{
+		vector<string> szin(N, "feher");
+		stack<int> tennivalok;
+		tennivalok.push(csucs);
+
+		while (!tennivalok.empty())
+		{
+			int tennivalo = tennivalok.top();
+			tennivalok.pop();
+			if (predicate(tennivalo))
+				return tennivalo;
+			szin[tennivalo] = "fekete";
+
+			for (int& szomszed : csucslista->at(tennivalo))
+			{
+				if (szin[szomszed]=="feher")
+				{
+					tennivalok.push(szomszed);
+					szin[szomszed] = "szurke";
+				}
+			}
+		}
+
+		return -1;
+	};
+
+
+	int count(int csucs, bool (*predicate)(int));
+	int where(int csucs, bool (*predicate)(int)) 
+	{
+		return 0;
+	};
 	bool connected();
-	int find(bool (*predicate)(int));
-	int count(bool (*predicate)(int));
-	int where(bool (*predicate)(int));
 	vector<int> shortest_path(int a, int b);
 
 
@@ -194,5 +226,7 @@ int main()
 
 	cslgraf.remove_edge(1, 3);
 	cslgraf.diagnostics();
+
+	cout << cslgraf.find(5, [](int x) {return x%2 == 0; }); // C# lambda, cslgraf.Where(5, x => True) // Python-lambda: cslgraf.where(5, lambda x: True)
 
 }
