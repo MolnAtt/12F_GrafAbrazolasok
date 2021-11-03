@@ -13,11 +13,16 @@ tesztinput:
 
 */
 
+
+
+
+
 #include <iostream>
 
 #include <vector>
 #include <stack>
 #include <queue>
+#include <string>
 using namespace std;
 
 #include <algorithm>
@@ -151,12 +156,64 @@ public:
 	};
 
 
-	int count(int csucs, bool (*predicate)(int));
-	int where(int csucs, bool (*predicate)(int)) 
+	int count(int csucs, bool (*predicate)(int))
 	{
-		return 0;
-	};
-	bool connected();
+		int db = 0;
+		vector<string> szin(N, "feher");
+		stack<int> tennivalok;
+		tennivalok.push(csucs);
+
+		while (!tennivalok.empty())
+		{
+			int tennivalo = tennivalok.top();
+			tennivalok.pop();
+			if (predicate(tennivalo))
+				db++;
+			szin[tennivalo] = "fekete";
+
+			for (int& szomszed : csucslista->at(tennivalo))
+			{
+				if (szin[szomszed] == "feher")
+				{
+					tennivalok.push(szomszed);
+					szin[szomszed] = "szurke";
+				}
+			}
+		}
+		return db;
+	}
+	
+	vector<int> where(int csucs, bool (*predicate)(int)) 
+	{
+		vector<int> result;
+		vector<string> szin(N, "feher");
+		stack<int> tennivalok;
+		tennivalok.push(csucs);
+
+		while (!tennivalok.empty())
+		{
+			int tennivalo = tennivalok.top();
+			tennivalok.pop();
+			if (predicate(tennivalo))
+				result.push_back(tennivalo);
+			szin[tennivalo] = "fekete";
+
+			for (int& szomszed : csucslista->at(tennivalo))
+			{
+				if (szin[szomszed] == "feher")
+				{
+					tennivalok.push(szomszed);
+					szin[szomszed] = "szurke";
+				}
+			}
+		}
+		return result;
+	}
+	bool connected()
+	{
+		return N = 0 || (N == count(0, [](int x) {return x == x; }));
+
+	}
 	vector<int> shortest_path(int a, int b);
 
 
@@ -196,13 +253,22 @@ private:
 	}
 };
 
+string to_string(vector<int> v) 
+{
+	string sum = "[";
+	for (int& i : v)
+	{
+		sum += " " + to_string(i);
+	}
+	return sum + " ]";
+}
 
 int main()
 {
 	CsucslistasGraf cslgraf;
 
 	cslgraf.diagnostics();
-		
+	/*
 	cout << cslgraf.van_el(0, 1)<<endl;
 	
 	cslgraf.add_edge(0, 3);
@@ -227,6 +293,33 @@ int main()
 	cslgraf.remove_edge(1, 3);
 	cslgraf.diagnostics();
 
-	cout << cslgraf.find(5, [](int x) {return x%2 == 0; }); // C# lambda, cslgraf.Where(5, x => True) // Python-lambda: cslgraf.where(5, lambda x: True)
+	cout << cslgraf.find(6, [](int x) {return x == 9; }); // C# lambda, cslgraf.Where(5, x => True) // Python-lambda: cslgraf.where(5, lambda x: True)
 
+	cout << cslgraf.count(10, [](int x) {return x%2 == 1; });
+
+	cout << to_string(cslgraf.where(0, [](int x) {return x % 2 == 1; }));
+
+	cout << to_string(vector<int>{7, 9, 8, 25, 96, 7, 6, 2});
+	*/
+
+	cout << cslgraf.connected();
 }
+
+
+/*
+tesztinput
+11 11
+0 1
+0 2
+1 3
+1 5
+2 3
+2 4
+2 5
+6 7
+7 8
+7 9
+8 9
+
+*/
+
