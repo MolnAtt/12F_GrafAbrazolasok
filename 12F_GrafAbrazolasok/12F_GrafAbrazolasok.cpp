@@ -88,7 +88,7 @@ public:
 
 	void add_edge(int a, int b) // <=n 
 	{
-		if (!van_el(a,b))
+		if (!van_el(a, b))
 		{
 			(*csucslista)[a].push_back(b);
 			if (a != b)
@@ -119,16 +119,16 @@ public:
 		}
 	}
 
-	void add_node() 
-	{ 
+	void add_node()
+	{
 		csucslista->push_back(vector<int>());
-		N++; 
+		N++;
 	};
 	// void remove_node_with_edges(int a); // nem csináljuk meg, mert nagyon összezavar mindent. Meg kell változtatni a node-ok számozását!
 	int degree(int a); // pont fokszáma
 	bool loop(int a); // hurokél
 	bool isolated(int a);
-	int find(int csucs, bool (*predicate)(int))
+	int find_melysegi(int csucs, bool (*predicate)(int))
 	{
 		vector<string> szin(N, "feher");
 		stack<int> tennivalok;
@@ -138,13 +138,13 @@ public:
 		{
 			int tennivalo = tennivalok.top();
 			tennivalok.pop();
-			if (predicate(tennivalo))
+			if (predicate(tennivalo)) // feldolgozás = feketére színezés
 				return tennivalo;
 			szin[tennivalo] = "fekete";
 
 			for (int& szomszed : csucslista->at(tennivalo))
 			{
-				if (szin[szomszed]=="feher")
+				if (szin[szomszed] == "feher")
 				{
 					tennivalok.push(szomszed);
 					szin[szomszed] = "szurke";
@@ -154,6 +154,113 @@ public:
 
 		return -1;
 	};
+
+	int find_szelessegi(int csucs, bool (*predicate)(int))
+	{
+		vector<string> szin(N, "feher");
+		queue<int> tennivalok;
+		tennivalok.push(csucs);
+
+		while (!tennivalok.empty())
+		{
+			int tennivalo = tennivalok.front();
+			tennivalok.pop();
+			if (predicate(tennivalo)) // feldolgozás = feketére színezés
+				return tennivalo;
+			szin[tennivalo] = "fekete";
+
+			for (int& szomszed : csucslista->at(tennivalo))
+			{
+				if (szin[szomszed] == "feher")
+				{
+					tennivalok.push(szomszed);
+					szin[szomszed] = "szurke";
+				}
+			}
+		}
+
+		return -1;
+	};
+
+	int distance(int csucs, bool (*predicate)(int))
+	{
+		vector<int> dist(N, -1);
+		dist[csucs] = 0; // azt kötjük ki, hogy saját magától 0 távolságra van.
+		vector<string> szin(N, "feher");
+		queue<int> tennivalok;
+		tennivalok.push(csucs);
+
+		while (!tennivalok.empty())
+		{
+			int tennivalo = tennivalok.front();
+			tennivalok.pop();
+			if (predicate(tennivalo)) // feldolgozás = feketére színezés
+				return dist[tennivalo];
+			szin[tennivalo] = "fekete";
+
+			for (int& szomszed : csucslista->at(tennivalo))
+			{
+				if (szin[szomszed] == "feher")
+				{
+					tennivalok.push(szomszed);
+					dist[szomszed] = dist[tennivalo] + 1;
+					szin[szomszed] = "szurke";
+				}
+			}
+		}
+
+		return -1;
+	};
+
+	vector<int> utvonal(int end, const vector<int>& honnan)
+	{
+		stack<int> verem;
+		while (honnan[end]!=-2)
+		{
+			verem.push(end);
+			end = honnan[end];
+		}
+		vector<int> result;
+		while (!verem.empty())
+		{
+			result.push_back(verem.top());
+			verem.pop();
+		}
+		return result;
+	}
+
+
+	vector<int> shortest_path(int csucs, bool (*predicate)(int))
+	{
+		vector<int> honnan(N, -1); // Amikor beszürkült, HONNAN szürkítettük be a szelessegi bejaras;
+		vector<string> szin(N, "feher");
+		queue<int> tennivalok;
+		tennivalok.push(csucs);
+
+		while (!tennivalok.empty())
+		{
+			int tennivalo = tennivalok.front();
+			tennivalok.pop();
+			if (predicate(tennivalo)) // feldolgozás = feketére színezés
+				return utvonal(tennivalo, honnan);
+			szin[tennivalo] = "fekete";
+
+			for (int& szomszed : csucslista->at(tennivalo))
+			{
+				if (szin[szomszed] == "feher")
+				{
+					tennivalok.push(szomszed);
+					honnan[szomszed] = tennivalo; // útvonalvektor
+					szin[szomszed] = "szurke";
+				}
+			}
+		}
+
+		return vector<int>();
+	};
+
+
+
 
 
 	int count(int csucs, bool (*predicate)(int))
@@ -300,9 +407,13 @@ int main()
 	cout << to_string(cslgraf.where(0, [](int x) {return x % 2 == 1; }));
 
 	cout << to_string(vector<int>{7, 9, 8, 25, 96, 7, 6, 2});
-	*/
 
 	cout << cslgraf.connected();
+
+	cout << cslgraf.distance(0, [](int n) { return n == 2; });
+	*/
+	cout << to_string(cslgraf.shortest_path(0, [](int n) { return n == 2; }));
+
 }
 
 
